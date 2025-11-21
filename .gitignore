@@ -1,0 +1,51 @@
+# ------------------------------
+# Python virtual environment
+# ------------------------------
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Tkinter / GUI temp files
+*.log
+
+# ------------------------------
+# Verilog Simulation Outputs
+# ------------------------------
+sim/
+sim/*.vvp
+*.vvp
+
+# GTKWave Waveforms
+waveform/
+waveform/*.vcd
+waveform/*.gtkw
+
+# HEX and memory output files
+*.hex
+*.mem
+
+# ------------------------------
+# OS / Editor files
+# ------------------------------
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Backup files
+*~
+*.bak
+*.tmp
+
