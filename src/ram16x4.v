@@ -12,8 +12,8 @@ module ram16x4(
 reg [3:0] mem [15:0];
 
 integer i;
-always @(posedge clk) begin
-    //Synchronous Reset of RAM Memory
+always @(posedge clk or posedge rst) begin
+    //Asynchronous Reset of RAM Memory
     if (rst) begin
         for (i=0; i<16; i=i+1) begin
             mem[i] <= 4'b0000;
