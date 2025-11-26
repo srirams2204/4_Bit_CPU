@@ -129,9 +129,9 @@ module reg_alu4 (
         endcase
     end
 
-    // --------------------------------------
-    // Synchronous register update
-    // --------------------------------------
+    // ------------------------------------------------
+    // Synchronous register update & Asynchronous Reset
+    // ------------------------------------------------
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             alu_out <= 4'b0000;
