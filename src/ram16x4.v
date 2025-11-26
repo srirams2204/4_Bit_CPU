@@ -6,19 +6,19 @@ module ram16x4(
     input [3:0] addr,
     input csn,
     input rwn,
-    input clk, rst
+    input clk, rst_n
 ); 
 
 reg [3:0] mem [15:0];
 
 integer i;
-always @(posedge clk or posedge rst) begin
+always @(posedge clk or negedge rst_n) begin
     //Asynchronous Reset of RAM Memory
-    if (rst) begin
+    if (!rst_n) begin
         for (i=0; i<16; i=i+1) begin
             mem[i] <= 4'b0000;
-            data_out <= 4'b0000;
         end
+    data_out <= 4'b0000;
     end
 
     else if (!csn) begin 
