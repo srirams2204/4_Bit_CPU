@@ -132,8 +132,8 @@ module reg_alu4 (
     // --------------------------------------
     // Synchronous register update
     // --------------------------------------
-    always @(posedge clk or negedge rst) begin
-        if (!rst) begin
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
             alu_out <= 4'b0000;
             cout    <= 1'b0;
         end else begin
