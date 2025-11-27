@@ -11,7 +11,7 @@ module reg_alu4 (
     input  [2:0] alu_sel,
 
     input        clk,
-    input        rst
+    input        rst_n
 );
 
 // --------------------------------------
@@ -135,8 +135,8 @@ end
 // ------------------------------------------------
 // Synchronous register update & Asynchronous Reset
 // ------------------------------------------------
-always @(posedge clk or negedge rst) begin
-    if (!rst) begin
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
         alu_out <= 4'b0000;
         cout    <= 1'b0;
     end else begin
