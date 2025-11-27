@@ -25,7 +25,7 @@ always @(posedge clk or negedge rst_n) begin
         if (!rwn) begin
             // WRITE operation
             mem[addr] <= data_in;
-            data_out  <= data_in;   // write-through
+            data_out  <= 4'b0000;   
         end
 
         else begin
