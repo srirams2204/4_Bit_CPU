@@ -9,11 +9,11 @@ root = tk.Tk()
 title = root.title('4-Bit-CPU')
 
 #Default GUI Window Dimension
-window_width = 1000
-window_height = 720
+window_width = 1200
+window_height = 850
 
 #GUI window size limits
-root.minsize(1000, 720)
+root.minsize(window_width, window_height)
 #root.maxsize(1000, 700)
 
 #Startup GUI Window Position
@@ -24,7 +24,8 @@ window_resize = root.resizable(True, True) #Can Resize GUI window in the X and Y
 root.attributes('-alpha', 0.94)
 
 #GUI Icon File Path
-icon_path = r'C:\Users\srira\Desktop\CPU_4bit\tools\ic_chip_2.ico'
+#icon_path = r'C:\Users\srira\Desktop\CPU_4bit\tools\ic_chip_2.ico'
+icon_path = "./tools/ic_chip.png"
 
 #GUI Icon Change and Taskbar Icon
 if os.path.exists(icon_path):

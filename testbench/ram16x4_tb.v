@@ -2,141 +2,159 @@
 
 module ram16x4_tb;
 
-    reg  [3:0] data_in;
-    reg  [3:0] addr;
-    reg        csn;
-    reg        rwn;
-    reg        clk;
-    reg        rst;
-    wire [3:0] data_out;
+// ===============================================================
+// 1. SIGNALS
+// ===============================================================
+reg        clk;
+reg        rst_n;
+reg        csn;      // Chip Select (Active Low)
+reg        rwn;      // Read(1) / Write(0)
+reg  [3:0] addr;
+reg  [3:0] data_in;
 
-    // DUT
-    ram16x4 uut (
-        .data_out(data_out),
-        .data_in(data_in),
-        .addr(addr),
-        .csn(csn),
-        .rwn(rwn),
-        .clk(clk),
-        .rst(rst)
-    );
+wire [3:0] data_out;
 
-    // Clock
-    always #5 clk = ~clk;
+// Loop variable
+integer i;
+integer errors;
 
-    // -----------------------------
-    // WRITE TASK
-    // -----------------------------
-    task DO_WRITE(input [3:0] a, input [3:0] d);
-    begin
+// Temporary variable to hold the expected 4-bit result
+reg [3:0] expected_val;
+
+// ===============================================================
+// 2. DUT INSTANTIATION (Outputs First)
+// ===============================================================
+ram16x4 u_dut (
+    .data_out (data_out),
+    .data_in  (data_in),
+    .addr     (addr),
+    .csn      (csn),
+    .rwn      (rwn),
+    .clk      (clk),
+    .rst_n    (rst_n)
+);
+
+// ===============================================================
+// 3. CLOCK GENERATION
+// ===============================================================
+initial begin
+    clk = 0;
+    forever #5 clk = ~clk; // 10ns Period
+end
+
+// ===============================================================
+// 4. TEST SEQUENCE
+// ===============================================================
+initial begin
+    $dumpfile("waveform/ram_tb.vcd");
+    $dumpvars(0, ram16x4_tb);
+    // Initialize
+    rst_n   = 0;
+    csn     = 1; // Deselected
+    rwn     = 1; // Read
+    addr    = 0;
+    data_in = 0;
+    errors  = 0;
+
+    // Print Header
+    $display("\n=========================================================================================");
+    $display("                                   RAM 16x4 TESTBENCH                                    ");
+    $display("=========================================================================================");
+    $display("| Time | Operation | CS | RW | Addr | Data In | Data Out | Exp Out | Status |");
+    $display("|------|-----------|----|----|------|---------|----------|---------|--------|");
+
+    // Apply Reset
+    repeat (2) @(posedge clk);
+    rst_n = 1;
+
+    // =================================================
+    // PHASE 1: WRITE SWEEP
+    // Write pattern (Addr + 1) to every location
+    // =================================================
+    $display("| ---- | WRITE ALL | -- | -- | ---- | ------- | -------- | ------- | ------ |");
+    
+    for (i = 0; i < 16; i = i + 1) begin
+        // Setup Inputs
         @(posedge clk);
-        addr    = a;
-        data_in = d;
-        csn     = 0;
-        rwn     = 0;
-        @(posedge clk);
-        $display("[WRITE] mem[%0d] <= %h | data_out=%h", a, d, data_out);
+        csn     = 0;          // Select RAM
+        rwn     = 0;          // Write Mode
+        addr    = i[3:0];
+        data_in = i[3:0] + 1; // 4-bit roll-over happens naturally here
+        
+        // Wait for write to happen
+        #1; 
+        
+        $display("| %4t | Write Mem |  0 |  0 |  %1h   |    %1h    |    %1h     |    -    |   -    |", 
+                    $time, addr, data_in, data_out);
     end
-    endtask
 
-    // -----------------------------
-    // READ TASK
-    // -----------------------------
-    task DO_READ(input [3:0] a);
-    begin
+    // Idle cycle
+    @(posedge clk);
+    csn = 1;
+    rwn = 1;
+
+    // =================================================
+    // PHASE 2: READ SWEEP & VERIFY
+    // Read back and check if Data == Addr + 1
+    // =================================================
+    $display("| ---- | READ ALL  | -- | -- | ---- | ------- | -------- | ------- | ------ |");
+
+    for (i = 0; i < 16; i = i + 1) begin
+        // Setup Inputs
         @(posedge clk);
-        addr = a;
-        csn  = 0;
-        rwn  = 1;
-        @(posedge clk);
-        $display("[READ] mem[%0d] => %h", a, data_out);
-    end
-    endtask
+        csn     = 0;       // Select RAM
+        rwn     = 1;       // Read Mode
+        addr    = i[3:0];
+        data_in = 4'h0;    
+        
+        // Calculate Expected Value (Masked to 4 bits to handle overflow!)
+        // 15 + 1 = 16 (0x10) -> Masked with 0xF = 0x0
+        expected_val = (i[3:0] + 1) & 4'hF;
 
-    // -----------------------------
-    // MAIN TEST
-    // -----------------------------
-    integer i;
-    reg [3:0] rand_addr, rand_data;
-
-    initial begin
-        $dumpfile("waveform/ram_tb.vcd");
-        $dumpvars(0, ram16x4_tb);
-
-        clk = 0;
-        rst = 1;
-        csn = 1;
-        rwn = 1;
-        addr = 0;
-        data_in = 0;
-
-        // RESET
-        $display("\n=== APPLY RESET ===");
-        @(posedge clk);
-        rst = 1;
-        @(posedge clk);
-        rst = 0;
-
-        // BASIC WRITES
-        $display("\n=== BASIC WRITE TESTS ===");
-        DO_WRITE(4'd3,  4'hA);
-        DO_WRITE(4'd7,  4'h5);
-        DO_WRITE(4'd15, 4'hF);
-
-        // BASIC READS
-        $display("\n=== BASIC READ TESTS ===");
-        DO_READ(4'd3);
-        DO_READ(4'd7);
-        DO_READ(4'd15);
-
-        // FULL ADDRESS SWEEP WRITE
-        $display("\n=== FULL WRITE (0–15) ===");
-        for (i = 0; i < 16; i = i + 1)
-            DO_WRITE(i[3:0], i[3:0]);
-
-        // FULL ADDRESS SWEEP READ
-        $display("\n=== FULL READ (0–15) ===");
-        for (i = 0; i < 16; i = i + 1)
-            DO_READ(i[3:0]);
-
-        // RANDOMIZED TEST
-        $display("\n=== RANDOMIZED READ/WRITE TEST ===");
-        for (i = 0; i < 10; i = i + 1) begin
-            rand_addr = $random % 16;
-            rand_data = $random % 16;
-            DO_WRITE(rand_addr, rand_data);
-            DO_READ(rand_addr);
+        // Wait for read access time
+        #1; 
+        
+        // Check Result
+        if (data_out !== expected_val) begin
+            $display("| %4t | Read Mem  |  0 |  1 |  %1h   |    -    |    %1h     |    %1h    |  FAIL  |", 
+                        $time, addr, data_out, expected_val);
+            errors = errors + 1;
+        end else begin
+            $display("| %4t | Read Mem  |  0 |  1 |  %1h   |    -    |    %1h     |    %1h    |  PASS  |", 
+                        $time, addr, data_out, expected_val);
         end
-
-        // CSN DISABLE TEST
-        $display("\n=== CSN DISABLE TEST ===");
-        @(posedge clk);
-        addr = 4'd3;
-        data_in = 4'h0;
-        rwn = 0;
-        csn = 1;  // disabled RAM
-        @(posedge clk);
-
-        DO_READ(4'd3); // should remain unchanged
-
-        // BACK-TO-BACK WRITE STRESS
-        $display("\n=== BACK-TO-BACK WRITE STRESS ===");
-        csn = 0;
-        rwn = 0;
-        for (i = 0; i < 16; i = i + 1) begin
-            @(posedge clk);
-            addr    = i;
-            data_in = ~i;
-        end
-
-        // verify
-        $display("\n=== VERIFY AFTER STRESS ===");
-        rwn = 1;
-        for (i = 0; i < 16; i = i + 1)
-            DO_READ(i);
-
-        $display("\n=== TEST COMPLETE ===");
-        #20 $finish;
     end
+
+    // =================================================
+    // PHASE 3: CHIP SELECT TEST
+    // =================================================
+    @(posedge clk);
+    csn  = 1; // Deselect
+    rwn  = 1; // Read
+    addr = 4'h5; 
+    #1;
+    
+    if (data_out !== 4'b0000) begin
+            $display("| %4t | CS High   |  1 |  1 |  %1h   |    -    |    %1h     |    0    |  FAIL  |", 
+                    $time, addr, data_out);
+            errors = errors + 1;
+    end else begin
+            $display("| %4t | CS High   |  1 |  1 |  %1h   |    -    |    %1h     |    0    |  PASS  |", 
+                    $time, addr, data_out);
+    end
+
+
+    // =================================================
+    // SUMMARY
+    // =================================================
+    $display("=========================================================================================");
+    if (errors == 0)
+        $display("TEST PASSED: All 16 addresses verified.");
+    else
+        $display("TEST FAILED: %0d errors found.", errors);
+    $display("=========================================================================================\n");
+    
+    $finish;
+end
 
 endmodule
