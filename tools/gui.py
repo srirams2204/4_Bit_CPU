@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image
 import os
-from assembler import assemble_text, write_memhex
+import subprocess
+from assembler import assemble_text, write_memhex, OPC
 
 #GUI Window Title
 root = tk.Tk()
@@ -24,17 +25,22 @@ window_resize = root.resizable(True, True) #Can Resize GUI window in the X and Y
 root.attributes('-alpha', 0.94)
 
 #GUI Icon File Path
-#icon_path = r'C:\Users\srira\Desktop\CPU_4bit\tools\ic_chip_2.ico'
-icon_path = "./tools/ic_chip.png"
+icon_path = os.path.abspath("ic_chip.png") 
 
-#GUI Icon Change and Taskbar Icon
 if os.path.exists(icon_path):
     try:
-        root.iconbitmap(icon_path)
+        # For .png files, use PhotoImage + iconphoto
+        icon_img = tk.PhotoImage(file=icon_path)
+        root.iconphoto(False, icon_img)
     except Exception as e:
-        print("Icon error:", e)
+        print(f"Icon error: {e}")
+        # Fallback for .ico if you happen to use one later
+        try:
+             root.iconbitmap(icon_path)
+        except:
+             pass
 else:
-    print("Icon file not found:", icon_path)
+    print(f"Icon file not found at: {icon_path}")
 
 def handle_ctrl_s(event):
     save_asm_file()
@@ -53,6 +59,115 @@ toolbar.pack(fill="x", side="top")
 # FILE STATE
 # -------------------------------------
 current_file = None
+
+# -------------------------------------
+# SIMULATION STATE
+# -------------------------------------
+execution_trace = []  # List of steps parsed from log
+current_step = 0      # Index of the next step to execute
+ram_injections = []    # Stores {address: value} for manual writes
+
+# ============================================================
+# SIMULATION ENGINE
+# ============================================================
+
+def run_verilog_process():
+    """
+    Directly runs iverilog/vvp using hardcoded paths.
+    """
+    sim_exe = "cpu_sim"
+    log_file = "simulation.log"
+    
+    # 1. Define source files with correct relative paths from 'tools/'
+    sources = [
+        "../testbench/bridge_tb.v",                # Local testbench
+        "../src/cpu_top.v",
+        "../src/decoder_fsm.v",
+        "../src/ram16x4.v",
+        "../src/reg_alu4.v",
+        "../src/full_adder4.v",
+        "../src/full_adder1.v",
+        "../src/xor_gate.v"
+    ]
+
+    try:
+        # A. COMPILE
+        cmd_compile = ["iverilog", "-o", sim_exe, "-I", "../src"] + sources
+        subprocess.run(cmd_compile, check=True, capture_output=True)
+
+        # B. RUN & LOG
+        with open(log_file, "w") as outfile:
+            subprocess.run(["vvp", sim_exe], stdout=outfile, check=True)
+            
+        return True
+
+    except subprocess.CalledProcessError as e:
+        err_msg = e.stderr.decode() if e.stderr else str(e)
+        messagebox.showerror("Simulation Error", f"Verilog failed:\n{err_msg}")
+        console_write(f"[SIM ERROR] {err_msg}")
+        return False
+    except FileNotFoundError:
+        messagebox.showerror("Config Error", "Icarus Verilog (iverilog) not found in PATH.")
+        return False
+
+def process_simulation_log():
+    """Parses simulation.log into a structured trace for stepping"""
+    global execution_trace, current_step
+    
+    log_file = "simulation.log"
+    execution_trace = [] # Clear previous trace
+    current_step = 0     # Reset step counter
+    
+    if not os.path.exists(log_file):
+        return
+
+    console_write("=== PARSING LOG ===")
+    
+    try:
+        with open(log_file, "r") as f:
+            for line in f:
+                line = line.strip()
+                
+                # PARSE [EXEC] EVENTS
+                # Format: [EXEC] PC:0 | Op:STO | Dest:7 | Src:2
+                if line.startswith("[EXEC]"):
+                    parts = line.split("|")
+                    step = {
+                        "type": "EXEC",
+                        "pc":   parts[0].split(":")[1].strip(),
+                        "op":   parts[1].split(":")[1].strip(),
+                        "dest": parts[2].split(":")[1].strip(),
+                        "src":  parts[3].split(":")[1].strip()
+                    }
+                    execution_trace.append(step)
+
+                # PARSE [RAM] EVENTS
+                # Format: [RAM] Addr:7 Val:2
+                elif line.startswith("[RAM]"):
+                    parts = line.split() 
+                    step = {
+                        "type": "RAM",
+                        "addr": int(parts[1].split(":")[1], 16),
+                        "val":  int(parts[2].split(":")[1], 16)
+                    }
+                    execution_trace.append(step)
+
+                elif line.startswith("[DONE]"):
+                    execution_trace.append({"type": "DONE"})
+                    console_write(f"[INFO] Simulation trace loaded: {len(execution_trace)} steps.")
+
+    except Exception as e:
+        console_write(f"[LOG ERROR] Could not read log: {e}")
+
+def save_injections_file():
+    """Writes user RAM edits to injections.txt for the testbench to read"""
+    try:
+        with open("injections.txt", "w") as f:
+            for step, addr, val in ram_injections:
+                # Format: STEP_INDEX ADDRESS VALUE (in hex)
+                f.write(f"{step} {addr:x} {val:x}\n")
+    except Exception as e:
+        console_write(f"[ERROR] Saving injections: {e}")
 
 #-------------------------------------
 # GUI Button Functions
@@ -100,6 +215,8 @@ def open_asm_file():
         editor.delete("1.0", "end")
         editor.insert("1.0", content)
 
+        apply_highlighting()
+
         current_file = path
         update_title()
 
@@ -141,14 +258,205 @@ def save_asm_file_as():
     save_asm_file()
     update_title()
 
+def cmd_open_gtkwave():
+    """Opens the simulation waveform in GTKWave"""
+    vcd_file = "simulation.vcd"
+    if not os.path.exists(vcd_file):
+        messagebox.showerror("Error", "No waveform found. Run the simulation first.")
+        return
+    
+    try:
+        # Opens GTKWave as a separate process
+        subprocess.Popen(["gtkwave", vcd_file])
+        console_write("[TOOL] GTKWave opened.")
+    except FileNotFoundError:
+        messagebox.showerror("Error", "GTKWave not found in PATH.\nPlease install gtkwave.")
+
+#Clear RAM Table Button Function
+def cmd_clear_ram():
+    global ram_overrides
+    ram_overrides = {} # Clear overrides
+    for lbl in ram_cells:
+        lbl.config(text="0", fg="#FFFFFF") 
+    console_write("[CMD] RAM Table cleared.")
+
+#Run button function
+def cmd_run():
+    """Run Button Logic: Compile -> Run -> Parse -> Replay All"""
+    global current_step, ram_injections  # <--- NEW: Access global step counter
+
+    ram_injections = [] 
+    if os.path.exists("injections.txt"):
+        os.remove("injections.txt")
+    
+    code = editor.get("1.0", "end-1c")
+    try:
+        # 1. Compile Assembly
+        words, hex_lines, errors = assemble_text(code)
+        if errors:
+            console_write("[ABORT] Fix assembly errors first.")
+            for e in errors: console_write(f"[ASM ERROR] {e}")
+            messagebox.showerror("Error", "Fix assembly errors first.")
+            return
+        
+        write_memhex(hex_lines, "program.hex")
+        console_write("[1/3] Assembly Compiled.")
+
+        # 2. Run Simulation
+        if run_verilog_process():
+            console_write("[2/3] Verilog Simulation Finished.")
+            
+            # 3. Parse Log (Fills execution_trace list)
+            process_simulation_log()
+            
+            # 4. NEW: Replay ALL steps to update GUI to final state
+            console_write("=== EXECUTING ===")
+            for step in execution_trace:
+                execute_step(step)
+                
+            # 5. NEW: Set stepper to the end
+            current_step = len(execution_trace)
+            console_write("[3/3] Execution Complete.")
+            
+    except Exception as e:
+        console_write(f"[CRITICAL] {e}")
+        messagebox.showerror("Runtime Error", str(e))
+
+def highlight_execution_line(pc_val):
+    """Maps the PC value to the text editor line and highlights it"""
+    # 1. Get all text from editor
+    content = editor.get("1.0", "end").splitlines()
+    
+    valid_ins_count = 0
+    target_line_idx = -1
+
+    # 2. Scan lines to find the Nth instruction (matching PC)
+    for idx, line in enumerate(content):
+        # Strip comments and whitespace (same logic as assembler)
+        # We assume import re exists at top
+        clean_line = line.split(";")[0].split("//")[0].strip()
+        
+        if clean_line:
+            # If this line has code, it counts towards the PC
+            if valid_ins_count == pc_val:
+                target_line_idx = idx + 1 # Tkinter lines are 1-based
+                break
+            valid_ins_count += 1
+
+    # 3. Apply Visual Highlight
+    editor.tag_remove("exec_line", "1.0", "end") # Clear old
+    
+    if target_line_idx != -1:
+        start = f"{target_line_idx}.0"
+        end   = f"{target_line_idx+1}.0"
+        editor.tag_add("exec_line", start, end)
+        editor.see(start) # Auto-scroll to keep line in view
+
+def execute_step(step):
+    """Updates GUI based on a single step event"""
+    if step["type"] == "EXEC":
+        # Log the executed instruction
+        msg = f"[PC {step['pc']}] {step['op']} {step['dest']}, {step['src']}"
+        console_write(msg)
+        
+        # --- NEW: Highlight the line in editor ---
+        try:
+            pc_int = int(step['pc'])
+            highlight_execution_line(pc_int)
+        except:
+            pass
+        
+    elif step["type"] == "RAM":
+        # Update RAM Table Visuals
+        addr = step["addr"]
+        val  = step["val"]
+        ram_cells[addr].config(text=f"{val:X}", fg="#00FF00") 
+        console_write(f"    └── RAM[{addr:X}] updated to {val:X}")
+        
+    elif step["type"] == "DONE":
+        console_write("[STOP] Program Halted.")
+        # Optional: Remove highlight on finish
+        # editor.tag_remove("exec_line", "1.0", "end")
+        
+    elif step["type"] == "DONE":
+        console_write("[STOP] Program Halted.")
+
+#Step instruction button function
+def cmd_step():
+    """Executes the trace grouping EXEC+RAM into a single click"""
+    global current_step, execution_trace
+    
+    # 1. AUTO-INITIALIZATION (Silent)
+    # If trace is empty, we compile and run sim, but DO NOT replay all steps yet.
+    if not execution_trace:
+        console_write("[INFO] Initializing simulation trace...")
+        
+        # A. Compile Assembly
+        code = editor.get("1.0", "end-1c")
+        try:
+            words, hex_lines, errors = assemble_text(code)
+            if errors:
+                console_write("[ABORT] Fix errors first.")
+                return
+            write_memhex(hex_lines, "program.hex")
+        except Exception as e:
+            console_write(f"[ERROR] {e}")
+            return
+
+        # B. Run Hardware Simulation
+        if not run_verilog_process(): 
+            return
+        
+        # C. Parse Log
+        process_simulation_log() 
+        current_step = 0
+        # Note: We do NOT return here. We proceed immediately to execute the first step.
+
+    # 2. RESTART LOGIC
+    # If we reached the end previously, loop back to start
+    if current_step >= len(execution_trace):
+        console_write("[INFO] Restarting simulation trace...")
+        current_step = 0
+        for lbl in ram_cells: lbl.config(fg="#FFFFFF") # Reset colors
+
+    # 3. SMART STEP EXECUTION
+    # Execute the current event (EXEC), and then auto-play any immediate RAM updates
+    if current_step < len(execution_trace):
+        
+        # Execute the main instruction event
+        execute_step(execution_trace[current_step])
+        current_step += 1
+        
+        # Look ahead: If the next events are RAM updates (associated with this op), do them now.
+        while current_step < len(execution_trace):
+            next_type = execution_trace[current_step]["type"]
+            
+            # Stop if we hit the next Instruction Start
+            if next_type == "EXEC":
+                break
+            
+            # Execute RAM updates or DONE messages immediately
+            execute_step(execution_trace[current_step])
+            current_step += 1
+
 #Assembly Code Compile Function
 def compile_program():
     code = editor.get("1.0", "end-1c")
 
     try:
-        words, hex_lines = assemble_text(code)
-        write_memhex(hex_lines, "program.hex")
+        # FIX: Unpack 3 values (words, hex, errors) instead of 2
+        words, hex_lines, errors = assemble_text(code)
 
+        # 1. Check for Assembly Errors
+        if errors:
+            console_write("=== COMPILE ERRORS ===")
+            for e in errors:
+                console_write(f"[ERROR] {e}")
+            messagebox.showerror("Compile Failed", f"Found {len(errors)} errors.\nCheck console details.")
+            return # Stop here to prevent writing bad hex files
+
+        # 2. Success Path
+        write_memhex(hex_lines, "program.hex")
         messagebox.showinfo("Compile Success", "Assembly compiled successfully!")
         console_write("=== COMPILE OUTPUT ===")
 
@@ -157,7 +465,84 @@ def compile_program():
 
     except Exception as e:
         messagebox.showerror("Compile Error", str(e))
-        console_write("[ERROR] " + str(e))
+        console_write("[CRITICAL ERROR] " + str(e))
+
+# -------------------------------------
+# SYNTAX HIGHLIGHTING ENGINE
+# -------------------------------------
+def setup_highlight_tags():
+    """Define colors for syntax highlighting"""
+    # Define tags only if editor exists
+    try:
+        # Keywords/Opcodes (Blue)
+        editor.tag_configure("opcode", foreground="#569CD6", font=("Consolas", 12, "bold"))
+        # Numbers (Light Green)
+        editor.tag_configure("number", foreground="#B5CEA8")
+        # Comments (Dark Green)
+        editor.tag_configure("comment", foreground="#6A9955", font=("Consolas", 12, "italic"))
+        # Dark Blue background for the active line
+        editor.tag_configure("exec_line", background="#264f78")
+    except:
+        pass
+
+def apply_highlighting(event=None):
+    """Scan text and apply tags based on regex patterns"""
+    if 'editor' not in globals():
+        return
+
+    # 1. Clear existing tags
+    for tag in ["opcode", "number", "comment"]:
+        editor.tag_remove(tag, "1.0", "end")
+
+    # 2. Highlight Opcodes (Keywords)
+    # Using \m (start of word) and \M (end of word) for Tcl regex boundaries
+    for opcode in OPC.keys():
+        start_idx = "1.0"
+        pattern = r"\m" + opcode + r"\M"
+        
+        while True:
+            # Search for pattern
+            start_idx = editor.search(pattern, start_idx, stopindex="end", count=tk.IntVar(), regexp=True, nocase=True)
+            if not start_idx:
+                break
+            
+            # Calculate end index based on opcode length
+            line, char = start_idx.split(".")
+            end_idx = f"{line}.{int(char) + len(opcode)}"
+            
+            editor.tag_add("opcode", start_idx, end_idx)
+            start_idx = end_idx
+
+    # 3. Highlight Numbers (Hex 0x..., Bin 0b..., Decimal)
+    start_idx = "1.0"
+    while True:
+        count_var = tk.IntVar()
+        # Regex: 0x... OR 0b... OR digits
+        start_idx = editor.search(r"(0x[0-9A-Fa-f]+|0b[01]+|\d+)", start_idx, stopindex="end", count=count_var, regexp=True)
+        if not start_idx:
+            break
+        
+        length = count_var.get()
+        if length == 0: break
+        
+        end_idx = f"{start_idx}+{length}c"
+        editor.tag_add("number", start_idx, end_idx)
+        start_idx = end_idx
+
+    # 4. Highlight Comments (Starting with ; or //)
+    start_idx = "1.0"
+    while True:
+        count_var = tk.IntVar()
+        start_idx = editor.search(r"(;|//).*", start_idx, stopindex="end", count=count_var, regexp=True)
+        if not start_idx:
+            break
+            
+        length = count_var.get()
+        if length == 0: break
+
+        end_idx = f"{start_idx}+{length}c"
+        editor.tag_add("comment", start_idx, end_idx)
+        start_idx = end_idx
 
 #-------------------------------------
 # GUI Buttons in the Toolbar
@@ -190,6 +575,14 @@ btn_save_as = tk.Button(toolbar, text="Save As", width=7, height=1, bg="#3c3c3c"
                         command=save_asm_file_as)
 btn_save_as.pack(side="left", padx=BTN_PADX, pady=BTN_PADY)
 
+btn_wave = tk.Button(toolbar, text="🌊 Wave", width=9, height=1,
+                     bg="#3498db", fg="black",
+                     activebackground="#2980b9", activeforeground="white",
+                     font=("Consolas", 12, "bold"),
+                     relief="flat", bd=0,
+                     command=cmd_open_gtkwave)
+btn_wave.pack(side="right", padx=6, pady=8)
+
 # RUN / STEP / COMPILE / CLEAR RAM buttons unchanged
 
 btn_compile = tk.Button(toolbar, text="Compile", width=9, height=1,
@@ -205,7 +598,7 @@ btn_step = tk.Button(toolbar, text="⏭ Step", width=9, height=1,
                      activebackground="#d35400", activeforeground="white",
                      font=("Consolas", 12, "bold"),
                      relief="flat", bd=0,
-                     command=lambda: console_write("[STEP] Not yet connected"))
+                     command=cmd_step)
 btn_step.pack(side="right", padx=6, pady=8)
 
 btn_run = tk.Button(toolbar, text="▶ Run", width=9, height=1,
@@ -213,7 +606,7 @@ btn_run = tk.Button(toolbar, text="▶ Run", width=9, height=1,
                     activebackground="#27ae60", activeforeground="white",
                     font=("Consolas", 12, "bold"),
                     relief="flat", bd=0,
-                    command=lambda: console_write("[RUN] Not yet connected"))
+                    command=cmd_run)
 btn_run.pack(side="right", padx=6, pady=8)
 
 btn_clear_ram = tk.Button(toolbar, text="Clear RAM", width=9, height=1,
@@ -221,7 +614,7 @@ btn_clear_ram = tk.Button(toolbar, text="Clear RAM", width=9, height=1,
                           activebackground="#555", activeforeground="white",
                           font=("Consolas", 12, "bold"),
                           relief="flat", bd=0,
-                          command=lambda: console_write("[RAM] Clear not implemented"))
+                          command=cmd_clear_ram)
 btn_clear_ram.pack(side="right", padx=6, pady=8)
 
 #-------------------------------------
@@ -248,7 +641,7 @@ class LineNumbers(tk.Canvas):
         self.text_widget = text_widget
         self.text_widget.bind("<<Modified>>", self.update)
         self.text_widget.bind("<Configure>", self.update)
-        self.text_widget.bind("<KeyRelease>", self.update)
+        self.text_widget.bind("<KeyRelease>", self.update, add="+")
 
     def update(self, event=None):
         if self.text_widget is None:
@@ -290,6 +683,10 @@ editor = tk.Text(editor_area,
                  selectbackground="#555555",
                  yscrollcommand=editor_scroll.set)
 editor.pack(side="left", fill="both", expand=True)
+
+setup_highlight_tags()
+editor.bind("<KeyRelease>", apply_highlighting, add="+")
+apply_highlighting()
 
 editor_scroll.config(command=editor.yview)
 line_bar.attach(editor)
@@ -400,24 +797,61 @@ def validate_hex_entry(entry_widget, max_value=0xF):
 
 
 def write_to_ram():
-    # Validate address
+    """
+    Injects a manual RAM value and re-simulates WITHOUT losing position.
+    """
+    global execution_trace, current_step, ram_injections
+    
+    # 1. Validation
     if not validate_hex_entry(addr_entry, 0xF):
-        messagebox.showerror("Invalid Address", "Address must be 0–F (4-bit).")
+        messagebox.showerror("Invalid Address", "Address must be 0–F.")
         return
-
-    # Validate data
     if not validate_hex_entry(data_entry, 0xF):
-        messagebox.showerror("Invalid Data", "Data must be 0–F (4-bit).")
+        messagebox.showerror("Invalid Data", "Data must be 0–F.")
         return
 
     addr = int(addr_entry.get(), 16)
     data = int(data_entry.get(), 16)
 
-    # Update RAM table visually
-    ram_cells[addr].config(text=f"{data:X}")
+    # 2. Calculate Injection Target (Map Step -> PC)
+    # We must attach this injection to the CURRENT PC so the Verilog knows WHEN to inject.
+    target_pc = 0
+    if execution_trace and current_step < len(execution_trace):
+        # Try to find the PC of the current step
+        item = execution_trace[current_step]
+        if item["type"] == "EXEC":
+            target_pc = int(item["pc"])
+        else:
+            # If currently on a RAM step, look back or assume same PC
+            # Defaulting to index logic if parsing fails
+            target_pc = int(execution_trace[current_step-1]["pc"]) if current_step > 0 else 0
+    else:
+        # If at start or end, inject at 0 or max
+        target_pc = 0
 
-    print(f"[RAM] Updated RAM[{addr:01X}] = {data:01X}")
+    # 3. Save Injection
+    ram_injections.append((target_pc, addr, data))
+    console_write(f"[MANUAL] Injecting RAM[{addr:X}]={data:X} at PC={target_pc}")
 
+    # 4. SAVE POSITION (The Fix!)
+    old_step_index = current_step
+
+    # 5. Re-Run Simulation
+    save_injections_file()
+    if run_verilog_process():
+        process_simulation_log() # This resets current_step to 0
+        
+        # 6. RESTORE POSITION (Fast Forward)
+        console_write(f"=== RESTORING STATE TO STEP {old_step_index} ===")
+        
+        # Re-play everything up to where we were
+        # We assume the trace structure hasn't fundamentally changed
+        current_step = 0
+        while current_step < old_step_index and current_step < len(execution_trace):
+            execute_step(execution_trace[current_step])
+            current_step += 1
+            
+        console_write("=== RESTORE COMPLETE ===")
 
 # Live validation while typing
 addr_entry.bind("<KeyRelease>", lambda e: validate_hex_entry(addr_entry))
