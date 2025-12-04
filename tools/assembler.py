@@ -87,17 +87,19 @@ def assemble_line(line: str):
 # Assemble multi-line assembly text (used in GUI)
 # ------------------------------------------------------------
 def assemble_text(text: str):
-    words, hex_lines = [], []
+    words, hex_lines, errors = [], [], []
+    
     for lineno, raw in enumerate(text.splitlines(), start=1):
         try:
-            w = assemble_line(raw)
+            w = assemble_line(raw) # Your existing function
+            if w is not None:
+                words.append(w)
+                hex_lines.append(f"{w:03x}")
         except Exception as e:
-            raise ValueError(f"Line {lineno}: {e}")
-        if w is None:
-            continue
-        words.append(w)
-        hex_lines.append(f"{w:03x}")  # 11 bits → up to 0x7FF (3 hex chars)
-    return words, hex_lines
+            # Capture error with line number instead of crashing
+            errors.append(f"Line {lineno}: {str(e)}")
+            
+    return words, hex_lines, errors
 
 # ------------------------------------------------------------
 # Assemble directly from a file (for CLI or GUI)
