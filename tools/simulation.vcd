@@ -1,5 +1,5 @@
 $date
-	Thu Dec  4 22:47:46 2025
+	Tue Dec  9 15:03:04 2025
 $end
 $version
 	Icarus Verilog
@@ -7,89 +7,75 @@ $end
 $timescale
 	1ps
 $end
-$scope module cpu_tb_gui $end
+$scope module cpu_tb_step $end
 $var wire 4 ! debug_ram_out [3:0] $end
 $var wire 1 " debug_cout $end
 $var wire 4 # debug_alu_res [3:0] $end
-$var reg 1 $ clk $end
-$var reg 11 % instruction [10:0] $end
-$var reg 24 & op_str [24:1] $end
-$var reg 1 ' reset_n $end
-$var integer 32 ( pc [31:0] $end
+$var reg 4 $ acc_val [3:0] $end
+$var reg 1 % carry_val $end
+$var reg 1 & clk $end
+$var reg 11 ' instruction [10:0] $end
+$var reg 24 ( op_str [23:0] $end
+$var reg 1 ) reset_n $end
+$var reg 4 * tmp_ram [3:0] $end
+$var integer 32 + i [31:0] $end
+$var integer 32 , pc [31:0] $end
+$var integer 32 - r [31:0] $end
+$var integer 32 . sf [31:0] $end
 $scope module u_cpu $end
-$var wire 1 $ clk $end
-$var wire 4 ) debug_alu_res [3:0] $end
+$var wire 1 & clk $end
+$var wire 4 / debug_alu_res [3:0] $end
 $var wire 1 " debug_cout $end
-$var wire 4 * debug_ram_out [3:0] $end
-$var wire 11 + instruction [10:0] $end
-$var wire 1 ' reset_n $end
-$var wire 4 , ram_wdata [3:0] $end
-$var wire 1 - ram_rwn $end
-$var wire 4 . ram_rdata [3:0] $end
-$var wire 1 / ram_csn $end
-$var wire 4 0 ram_addr [3:0] $end
-$var wire 4 1 alu_sel [3:0] $end
-$var wire 4 2 alu_f [3:0] $end
-$var wire 1 3 alu_en $end
-$var wire 1 4 alu_cout $end
-$var wire 4 5 alu_b [3:0] $end
-$var wire 4 6 alu_a [3:0] $end
+$var wire 4 0 debug_ram_out [3:0] $end
+$var wire 11 1 instruction [10:0] $end
+$var wire 1 ) reset_n $end
+$var wire 4 2 ram_wdata [3:0] $end
+$var wire 1 3 ram_rwn $end
+$var wire 4 4 ram_rdata [3:0] $end
+$var wire 1 5 ram_csn $end
+$var wire 4 6 ram_addr [3:0] $end
+$var wire 4 7 alu_sel [3:0] $end
+$var wire 4 8 alu_f [3:0] $end
+$var wire 1 9 alu_en $end
+$var wire 1 : alu_cout $end
+$var wire 4 ; alu_b [3:0] $end
+$var wire 4 < alu_a [3:0] $end
 $scope module u_alu $end
-$var wire 1 $ clk $end
-$var wire 1 ' reset_n $end
-$var wire 4 7 xor_res [3:0] $end
-$var wire 4 8 sum_out [3:0] $end
-$var wire 1 9 s2 $end
-$var wire 1 : s1 $end
-$var wire 1 ; s0 $end
-$var wire 4 < next_f [3:0] $end
-$var wire 1 = next_cout $end
-$var wire 1 > cout_arith $end
-$var wire 1 ? cin_in $end
-$var wire 4 @ b [3:0] $end
-$var wire 4 A alu_sel [3:0] $end
-$var wire 1 3 alu_en $end
-$var wire 4 B a [3:0] $end
-$var reg 4 C adder_b [3:0] $end
-$var reg 1 4 cout $end
-$var reg 4 D f [3:0] $end
-$var reg 4 E logic_res [3:0] $end
-$scope module u_adder $end
+$var wire 1 & clk $end
+$var wire 1 ) reset_n $end
+$var wire 4 = xor_res [3:0] $end
+$var wire 4 > sum_out [3:0] $end
+$var wire 1 ? s2 $end
+$var wire 1 @ s1 $end
+$var wire 1 A s0 $end
+$var wire 4 B next_f [3:0] $end
+$var wire 1 C next_cout $end
+$var wire 1 D cout_arith $end
+$var wire 1 E cin_in $end
 $var wire 4 F b [3:0] $end
-$var wire 1 ? cin $end
-$var wire 4 G sum [3:0] $end
-$var wire 1 > cout $end
-$var wire 1 H c3 $end
-$var wire 1 I c2 $end
-$var wire 1 J c1 $end
-$var wire 4 K a [3:0] $end
-$scope module fa0 $end
-$var wire 1 L a $end
-$var wire 1 M b $end
-$var wire 1 N c1 $end
+$var wire 4 G alu_sel [3:0] $end
+$var wire 1 9 alu_en $end
+$var wire 4 H a [3:0] $end
+$var reg 4 I adder_b [3:0] $end
+$var reg 1 : cout $end
+$var reg 4 J f [3:0] $end
+$var reg 4 K logic_res [3:0] $end
+$scope module u_adder $end
+$var wire 4 L b [3:0] $end
+$var wire 1 E cin $end
+$var wire 4 M sum [3:0] $end
+$var wire 1 D cout $end
+$var wire 1 N c3 $end
 $var wire 1 O c2 $end
-$var wire 1 ? cin $end
-$var wire 1 J cout $end
-$var wire 1 P sum $end
-$var wire 1 Q s_ab $end
-$scope module u_xor_ab $end
-$var wire 1 L a $end
-$var wire 1 M b $end
-$var wire 1 Q c $end
-$upscope $end
-$scope module u_xor_sum $end
-$var wire 1 Q a $end
-$var wire 1 ? b $end
-$var wire 1 P c $end
-$upscope $end
-$upscope $end
-$scope module fa1 $end
+$var wire 1 P c1 $end
+$var wire 4 Q a [3:0] $end
+$scope module fa0 $end
 $var wire 1 R a $end
 $var wire 1 S b $end
 $var wire 1 T c1 $end
 $var wire 1 U c2 $end
-$var wire 1 J cin $end
-$var wire 1 I cout $end
+$var wire 1 E cin $end
+$var wire 1 P cout $end
 $var wire 1 V sum $end
 $var wire 1 W s_ab $end
 $scope module u_xor_ab $end
@@ -99,17 +85,17 @@ $var wire 1 W c $end
 $upscope $end
 $scope module u_xor_sum $end
 $var wire 1 W a $end
-$var wire 1 J b $end
+$var wire 1 E b $end
 $var wire 1 V c $end
 $upscope $end
 $upscope $end
-$scope module fa2 $end
+$scope module fa1 $end
 $var wire 1 X a $end
 $var wire 1 Y b $end
 $var wire 1 Z c1 $end
 $var wire 1 [ c2 $end
-$var wire 1 I cin $end
-$var wire 1 H cout $end
+$var wire 1 P cin $end
+$var wire 1 O cout $end
 $var wire 1 \ sum $end
 $var wire 1 ] s_ab $end
 $scope module u_xor_ab $end
@@ -119,17 +105,17 @@ $var wire 1 ] c $end
 $upscope $end
 $scope module u_xor_sum $end
 $var wire 1 ] a $end
-$var wire 1 I b $end
+$var wire 1 P b $end
 $var wire 1 \ c $end
 $upscope $end
 $upscope $end
-$scope module fa3 $end
+$scope module fa2 $end
 $var wire 1 ^ a $end
 $var wire 1 _ b $end
 $var wire 1 ` c1 $end
 $var wire 1 a c2 $end
-$var wire 1 H cin $end
-$var wire 1 > cout $end
+$var wire 1 O cin $end
+$var wire 1 N cout $end
 $var wire 1 b sum $end
 $var wire 1 c s_ab $end
 $scope module u_xor_ab $end
@@ -139,71 +125,86 @@ $var wire 1 c c $end
 $upscope $end
 $scope module u_xor_sum $end
 $var wire 1 c a $end
-$var wire 1 H b $end
+$var wire 1 O b $end
 $var wire 1 b c $end
+$upscope $end
+$upscope $end
+$scope module fa3 $end
+$var wire 1 d a $end
+$var wire 1 e b $end
+$var wire 1 f c1 $end
+$var wire 1 g c2 $end
+$var wire 1 N cin $end
+$var wire 1 D cout $end
+$var wire 1 h sum $end
+$var wire 1 i s_ab $end
+$scope module u_xor_ab $end
+$var wire 1 d a $end
+$var wire 1 e b $end
+$var wire 1 i c $end
+$upscope $end
+$scope module u_xor_sum $end
+$var wire 1 i a $end
+$var wire 1 N b $end
+$var wire 1 h c $end
 $upscope $end
 $upscope $end
 $upscope $end
 $scope module u_xor0 $end
-$var wire 1 d a $end
-$var wire 1 e b $end
-$var wire 1 f c $end
-$upscope $end
-$scope module u_xor1 $end
-$var wire 1 g a $end
-$var wire 1 h b $end
-$var wire 1 i c $end
-$upscope $end
-$scope module u_xor2 $end
 $var wire 1 j a $end
 $var wire 1 k b $end
 $var wire 1 l c $end
 $upscope $end
-$scope module u_xor3 $end
+$scope module u_xor1 $end
 $var wire 1 m a $end
 $var wire 1 n b $end
 $var wire 1 o c $end
 $upscope $end
+$scope module u_xor2 $end
+$var wire 1 p a $end
+$var wire 1 q b $end
+$var wire 1 r c $end
+$upscope $end
+$scope module u_xor3 $end
+$var wire 1 s a $end
+$var wire 1 t b $end
+$var wire 1 u c $end
+$upscope $end
 $upscope $end
 $scope module u_decoder $end
-$var wire 4 p alu_result [3:0] $end
-$var wire 1 $ clk $end
-$var wire 11 q instruction [10:0] $end
-$var wire 1 ' reset_n $end
-$var wire 4 r ram_data_out [3:0] $end
-$var wire 3 s opcode [2:0] $end
-$var wire 4 t op2 [3:0] $end
-$var wire 4 u op1 [3:0] $end
-$var reg 4 v alu_a [3:0] $end
-$var reg 4 w alu_b [3:0] $end
-$var reg 1 3 alu_en $end
-$var reg 4 x alu_sel [3:0] $end
-$var reg 2 y current_state [1:0] $end
-$var reg 2 z next_state [1:0] $end
-$var reg 4 { ram_addr [3:0] $end
-$var reg 1 / ram_csn $end
-$var reg 4 | ram_data_in [3:0] $end
-$var reg 1 - ram_rwn $end
+$var wire 4 v alu_result [3:0] $end
+$var wire 1 & clk $end
+$var wire 11 w instruction [10:0] $end
+$var wire 1 ) reset_n $end
+$var wire 4 x ram_data_out [3:0] $end
+$var wire 3 y opcode [2:0] $end
+$var wire 4 z op2 [3:0] $end
+$var wire 4 { op1 [3:0] $end
+$var reg 4 | alu_a [3:0] $end
+$var reg 4 } alu_b [3:0] $end
+$var reg 1 9 alu_en $end
+$var reg 4 ~ alu_sel [3:0] $end
+$var reg 2 !" current_state [1:0] $end
+$var reg 2 "" next_state [1:0] $end
+$var reg 4 #" ram_addr [3:0] $end
+$var reg 1 5 ram_csn $end
+$var reg 4 $" ram_data_in [3:0] $end
+$var reg 1 3 ram_rwn $end
 $upscope $end
 $scope module u_ram $end
-$var wire 4 } addr [3:0] $end
-$var wire 1 $ clk $end
-$var wire 1 / csn $end
-$var wire 4 ~ data_in [3:0] $end
-$var wire 1 ' rst_n $end
-$var wire 1 - rwn $end
-$var reg 4 !" data_out [3:0] $end
-$var integer 32 "" i [31:0] $end
+$var wire 4 %" addr [3:0] $end
+$var wire 1 & clk $end
+$var wire 1 5 csn $end
+$var wire 4 &" data_in [3:0] $end
+$var wire 1 ) rst_n $end
+$var wire 1 3 rwn $end
+$var reg 4 '" data_out [3:0] $end
+$var integer 32 (" i [31:0] $end
 $upscope $end
 $upscope $end
 $scope task run_cycle $end
-$var reg 4 #" dest [3:0] $end
-$var reg 4 $" ram_val [3:0] $end
-$var integer 32 %" file [31:0] $end
-$var integer 32 &" inj_addr [31:0] $end
-$var integer 32 '" inj_step [31:0] $end
-$var integer 32 (" inj_val [31:0] $end
-$var integer 32 )" r [31:0] $end
+$var reg 4 )" dest [3:0] $end
+$var reg 4 *" ram_val [3:0] $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
@@ -212,30 +213,31 @@ $dumpall
 $end
 #0
 $dumpvars
+bx *"
 bx )"
-bx ("
-bx '"
-bx &"
-bx %"
-bx $"
-bx #"
-b10000 ""
+b10000 ("
+b0 '"
+b0 &"
+b0 %"
+b0 $"
+b0 #"
+b1 ""
 b0 !"
 b0 ~
 b0 }
 b0 |
-b0 {
-b1 z
-b0 y
+bx {
+bx z
+bx y
 b0 x
-b0 w
+bx w
 b0 v
-b0 u
-b0 t
-b0 s
-b0 r
-b0 q
-b0 p
+0u
+0t
+0s
+0r
+0q
+0p
 0o
 0n
 0m
@@ -266,829 +268,232 @@ b0 p
 0T
 0S
 0R
-0Q
+b0 Q
 0P
 0O
 0N
-0M
-0L
+b0 M
+b0 L
 b0 K
-0J
-0I
-0H
+b0 J
+b0 I
+b0 H
 b0 G
 b0 F
-b0 E
-b0 D
-b0 C
+0E
+0D
+0C
 b0 B
-b0 A
-b0 @
+0A
+0@
 0?
-0>
-0=
+b0 >
+b0 =
 b0 <
-0;
+b0 ;
 0:
 09
 b0 8
 b0 7
 b0 6
-b0 5
-04
-03
+15
+b0 4
+13
 b0 2
-b0 1
+bx 1
 b0 0
-1/
-b0 .
-1-
+b0 /
+bx .
+bx -
 b0 ,
-b0 +
-b0 *
-b0 )
+b10000 +
+bx *
+0)
 bx (
-0'
-bx &
-b0 %
-0$
+bx '
+0&
+0%
+b0 $
 b0 #
 0"
 b0 !
 $end
 #5000
-b10000 ""
-1$
+b10000 ("
+1&
 #10000
-0$
+0&
 #15000
-0/
-b10 z
-b1 y
-1'
-1$
+bx 6
+bx #"
+bx %"
+05
+b10 ""
+b1 !"
+1)
+1&
 #20000
-b111 0
+b1 y
 b111 {
-b111 }
-0/
-b111 u
-b10 t
+b111 z
+b111 6
 b111 #"
-b10100110101010001001111 &
-b1110010 %
-b1110010 +
-b1110010 q
-b0 (
-0$
-#25000
-b10 <
-b10 8
-b10 G
-1V
-1W
-1S
-b10 7
-1i
-b10 C
-b10 F
-1;
-1h
-b10 1
-b10 A
-b10 x
-b10 5
-b10 @
-b10 w
-13
-b111 0
-b111 {
-b111 }
-0/
-b11 z
-b10 y
-1$
-#30000
-0$
-#35000
-b0 <
-b0 8
-b0 G
-0V
-0W
-b0 7
-0i
-0S
-0h
-b0 C
-b0 F
-0;
-b1 z
-b10 ,
-b10 |
-b10 ~
-0-
-b0 5
-b0 @
-b0 w
-b0 1
-b0 A
-b0 x
-03
-b111 0
-b111 {
-b111 }
-0/
-b11 y
+b111 %"
+05
+b111 )"
+b10000010100010001000100 (
+b101110111 '
+b101110111 1
+b101110111 w
 b10 #
-b10 )
-b10 2
-b10 D
-b10 p
-1$
-#40000
-0$
-#45000
-b0 ,
-b0 |
-b0 ~
-b111 0
-b111 {
-b111 }
-1-
-0/
-b10 z
-b1 y
-1$
-#46000
-b10 $"
-b0 %"
-#50000
-b111 0
-b111 {
-b111 }
-0/
-b1 s
-b111 t
-b10000010100010001000100 &
-b101110111 %
-b101110111 +
-b101110111 q
-b1 (
-0$
-#55000
-1b
-1P
-0\
-1H
-1[
-b1001 <
-1Q
-1I
-1]
-b1001 8
-b1001 G
-0V
-1T
-1M
-1S
-1Y
-0W
-1l
-0i
-b101 7
-1f
-b111 C
-b111 F
-1;
-1R
-1g
-1k
-1h
-1e
-b11 z
-b10 1
-b10 A
-b10 x
-b10 6
-b10 B
-b10 K
+b10 /
+b10 8
+b10 J
 b10 v
-b111 5
-b111 @
-b111 w
-13
-b111 0
-b111 {
-b111 }
-0/
-b10 y
-b10 !
-b10 *
-b10 .
-b10 r
-b10 !"
-1$
-#60000
-0$
-#65000
-b0 <
-0b
-b0 8
-b0 G
-0P
-0H
-0Q
-0]
-0[
-0l
-b0 7
-0f
-0I
-0M
-0S
-0Y
-0T
-0k
-0h
-0e
-b0 C
-b0 F
-0R
-0g
-0;
-b1001 ,
-b1001 |
-b1001 ~
-0-
-b0 5
-b0 @
-b0 w
-b0 6
-b0 B
-b0 K
-b0 v
-b0 1
-b0 A
-b0 x
-03
-b111 0
-b111 {
-b111 }
-0/
-b1 z
-b1001 #
-b1001 )
-b1001 2
-b1001 D
-b1001 p
-b11 y
-1$
-#70000
-0$
-#75000
-b10 z
-b0 ,
-b0 |
-b0 ~
-b111 0
-b111 {
-b111 }
-1-
-0/
-b1 y
-b0 !
 b0 *
-b0 .
-b0 r
-b0 !"
-1$
-#76000
-b1001 $"
-#80000
-b10 0
-b10 {
-b10 }
-0/
-b0 s
-b10 u
-b1001 t
-b10 #"
-b10100110101010001001111 &
-b101001 %
-b101001 +
-b101001 q
-b10 (
-0$
-#85000
-b1001 <
-1P
-b1001 8
-b1001 G
-1b
-1Q
-1c
-1M
-1_
-1o
-b1001 7
-1f
-b1001 C
-b1001 F
-1;
-1n
-1e
-b10 1
-b10 A
-b10 x
-b1001 5
-b1001 @
-b1001 w
-13
-b10 0
-b10 {
-b10 }
-0/
-b11 z
-b10 y
-1$
-#90000
-0$
-#95000
-b0 <
-0P
-b0 8
-b0 G
-0b
-0Q
-0c
-0o
-b0 7
-0f
-0M
-0_
-0n
-0e
-b0 C
-b0 F
-0;
-b1001 ,
-b1001 |
-b1001 ~
-0-
-b0 5
-b0 @
-b0 w
-b0 1
-b0 A
-b0 x
-03
-b10 0
-b10 {
-b10 }
-0/
-b1 z
-b11 y
-1$
-#100000
-0$
-#105000
-b0 ,
-b0 |
-b0 ~
-b10 0
-b10 {
-b10 }
-1-
-0/
-b10 z
-b1 y
-1$
-#110000
-b10 0
-b10 {
-b10 }
-0/
-b10 s
-b100 t
-b10100110101010101000010 &
-b1000100100 %
-b1000100100 +
-b1000100100 q
-b11 (
-0$
-#115000
-1\
-1I
-0V
-1=
-1U
-1W
-1>
-0b
-1J
-b101 <
-1N
-1`
-0O
-b101 8
-b101 G
-1P
-1M
-1S
-1_
-0c
-0Q
-1o
-1f
-b1101 7
-1l
-b1011 C
-b1011 F
-1?
-1:
-1^
-1L
-1m
-1d
-1k
-b11 z
-b101 1
-b101 A
-b101 x
-b1001 6
-b1001 B
-b1001 K
-b1001 v
-b100 5
-b100 @
-b100 w
-13
-b10 0
-b10 {
-b10 }
-0/
-b10 y
-b1001 !
-b1001 *
-b1001 .
-b1001 r
-b1001 !"
-1$
-#120000
-0$
-#125000
+b10000 +
+b10 $
+b1 -
+b1 ,
+b10000000000000000000000000000011 .
+0&
+#25000
 0\
-0I
-0W
-0=
-0U
-b0 <
-0l
-0>
-0J
-0o
-b0 7
-0f
-b0 8
-b0 G
-0P
-0M
-0S
-0_
-0`
-0N
-0k
-b0 C
-b0 F
-0^
-0L
-0m
-0d
-0?
-0:
-b101 ,
-b101 |
-b101 ~
-0-
-b0 5
-b0 @
-b0 w
-b0 6
-b0 B
-b0 K
-b0 v
-b0 1
-b0 A
-b0 x
-03
-b10 0
-b10 {
-b10 }
-0/
-b1 z
-1"
-14
-b101 #
-b101 )
-b101 2
-b101 D
-b101 p
-b11 y
-1$
-#130000
-0$
-#135000
-b10 z
-b0 ,
-b0 |
-b0 ~
-b10 0
-b10 {
-b10 }
-1-
-0/
-b1 y
-b0 !
-b0 *
-b0 .
-b0 r
-b0 !"
-1$
-#136000
-b101 $"
-#140000
-b1111 0
-b1111 {
-b1111 }
-0/
-b0 s
-b1111 u
-b1010 t
-b1111 #"
-b10100110101010001001111 &
-b11111010 %
-b11111010 +
-b11111010 q
-b100 (
-0$
-#145000
-b1010 <
-1V
-b1010 8
-b1010 G
-1b
-1W
-1c
-1S
-1_
-1o
-b1010 7
-1i
-b1010 C
-b1010 F
-1;
-1n
+1O
 1h
-b10 1
-b10 A
-b10 x
-b1010 5
-b1010 @
-b1010 w
-13
-b1111 0
-b1111 {
-b1111 }
-0/
-b11 z
-b10 y
-1$
-#150000
-0$
-#155000
-b0 <
-0V
-b0 8
-b0 G
-0b
-0W
-0c
-0o
-b0 7
-0i
-0S
-0_
-0n
-0h
-b0 C
-b0 F
-0;
-b1 z
-b1010 ,
-b1010 |
-b1010 ~
-0-
-b0 5
-b0 @
-b0 w
-b0 1
-b0 A
-b0 x
-03
-b1111 0
-b1111 {
-b1111 }
-0/
-b11 y
-0"
-04
-b1010 #
-b1010 )
-b1010 2
-b1010 D
-b1010 p
-1$
-#160000
-0$
-#165000
-b0 ,
-b0 |
-b0 ~
-b1111 0
-b1111 {
-b1111 }
-1-
-0/
-b10 z
-b1 y
-1$
-#166000
-b1010 $"
-#170000
-b1111 0
-b1111 {
-b1111 }
-0/
-b110 s
-b0 t
-b10011100100111101010100 &
-b11011110000 %
-b11011110000 +
-b11011110000 q
-b101 (
-0$
-#175000
-xJ
-0\
-1H
-xO
 1[
-1Q
-1I
+b1100 B
+1P
 1]
-1>
+1N
 1b
-xV
+b1100 >
+b1100 M
+0V
 1T
 1`
-b10xx 8
-b10xx G
-xP
-1M
 1S
 1Y
 1_
-b101 <
 0c
 0W
+0r
 1o
-b1010 7
-1i
-b1111 C
-b1111 F
-z?
-1;
-1:
-19
+b10 =
+0l
+b111 I
+b111 L
+1A
 1^
 1R
-1m
-1g
-b101 E
-b11 z
-b111z 1
-b111z A
-b111z x
-b1010 6
-b1010 B
-b1010 K
-b1010 v
-13
-b1111 0
-b1111 {
-b1111 }
-0/
-b10 y
-b1010 !
-b1010 *
-b1010 .
-b1010 r
-b1010 !"
-1$
-#180000
-0$
-#185000
+1p
+1j
+1q
+1n
+1k
+b10 7
+b10 G
+b10 ~
+b101 <
+b101 H
+b101 Q
+b101 |
+b111 ;
+b111 F
+b111 }
+19
+b111 6
+b111 #"
+b111 %"
+05
+b11 ""
+b101 !
+b101 0
+b101 4
+b101 x
+b101 '"
+b10 !"
+1&
+#30000
+0&
+#35000
 0b
-0H
-0V
-0Q
+b0 B
+b0 >
+b0 M
+0h
+0O
 0]
 0[
-b0 8
-b0 G
-0P
-0>
-0I
+b0 =
 0o
-b0 7
-0i
-0J
-0M
+0N
+0P
 0S
 0Y
 0_
-0=
 0`
 0T
-0O
-b0 C
-b0 F
-b0 <
+0q
+0n
+0k
+b0 I
+b0 L
 0^
 0R
-0m
-0g
-0?
-0;
-0:
-09
-b0 E
-b101 ,
-b101 |
-b101 ~
-0-
-b0 6
-b0 B
-b0 K
-b0 v
-b0 1
-b0 A
-b0 x
+0p
+0j
+0A
+b1 ""
+b1100 2
+b1100 $"
+b1100 &"
 03
-b1111 0
-b1111 {
-b1111 }
-0/
-b1 z
-b101 #
-b101 )
-b101 2
-b101 D
-b101 p
-b11 y
-1$
-#190000
-0$
-#195000
-b10 z
-b0 ,
+b0 ;
+b0 F
+b0 }
+b0 <
+b0 H
+b0 Q
 b0 |
+b0 7
+b0 G
 b0 ~
-b1111 0
-b1111 {
-b1111 }
-1-
-0/
-b1 y
+09
+b111 6
+b111 #"
+b111 %"
+05
+b11 !"
+b1100 #
+b1100 /
+b1100 8
+b1100 J
+b1100 v
+1&
+#40000
+0&
+#45000
+b0 2
+b0 $"
+b0 &"
+b111 6
+b111 #"
+b111 %"
+13
+05
+b10 ""
 b0 !
-b0 *
-b0 .
-b0 r
-b0 !"
-1$
-#196000
-b101 $"
-#200000
-bx 0
-bx {
-bx }
-0/
-bx s
-bx u
-bx t
-bx %
-bx +
-bx q
-b110 (
-0$
+b0 0
+b0 4
+b0 x
+b0 '"
+b1 !"
+1&
+#46000
+b1100 *"
+#50000
+b10000 +
+b10 ,
+b1100 $
+0&

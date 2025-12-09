@@ -24,7 +24,6 @@ COLOR_ACCENT_BORDER = "#0078D7"        # Standard Blue (Active tab border)
 COLOR_SUCCESS = "#107C10"              # Green (Success buttons)
 COLOR_WARNING = "#FFB900"              # Orange (Warning buttons)
 COLOR_DANGER = "#E81123"               # Red (Error buttons)
-COLOR_BUTTON_LIGHT = "#E8E8E8"         # Light grey for buttons
 
 root.configure(bg=COLOR_BG_PRIMARY)
 
@@ -535,30 +534,29 @@ toolbar = tk.Frame(root, bg=COLOR_BG_SECONDARY, relief="solid", bd=1, height=50)
 toolbar.pack(fill="x", side="top", padx=0, pady=0)
 toolbar.pack_propagate(False)
 
-tk.Button(toolbar, text="📄 New", bg=COLOR_BUTTON_LIGHT, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=new_file).pack(side="left", padx=4, pady=5)
-tk.Button(toolbar, text="📂 Open", bg=COLOR_BUTTON_LIGHT, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=open_asm_file).pack(side="left", padx=4, pady=5)
-tk.Button(toolbar, text="💾 Save", bg=COLOR_BUTTON_LIGHT, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=save_asm_file).pack(side="left", padx=4, pady=5)
-tk.Button(toolbar, text="💾 Save As", bg=COLOR_BUTTON_LIGHT, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=save_asm_file_as).pack(side="left", padx=4, pady=5)
+tk.Button(toolbar, text="📄 New", bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=new_file).pack(side="left", padx=4, pady=5)
+tk.Button(toolbar, text="📂 Open", bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=open_asm_file).pack(side="left", padx=4, pady=5)
+tk.Button(toolbar, text="💾 Save", bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=save_asm_file).pack(side="left", padx=4, pady=5)
+tk.Button(toolbar, text="💾 Save As", bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=save_asm_file_as).pack(side="left", padx=4, pady=5)
 
 ttk.Separator(toolbar, orient="vertical").pack(side="left", fill="y", padx=8, pady=5)
 
 tk.Button(toolbar, text="⚙️  Compile", bg=COLOR_ACCENT_BORDER, fg="white", font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=compile_program).pack(side="right", padx=4, pady=5)
 tk.Button(toolbar, text="▶ Run", bg=COLOR_SUCCESS, fg="white", font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=cmd_run).pack(side="right", padx=4, pady=5)
 tk.Button(toolbar, text="⏭ Step", bg=COLOR_WARNING, fg="white", font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=cmd_step).pack(side="right", padx=4, pady=5)
-tk.Button(toolbar, text="🔄 Refresh", bg=COLOR_BUTTON_LIGHT, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=cmd_refresh).pack(side="right", padx=4, pady=5)
-tk.Button(toolbar, text="🗑  Clear RAM", bg=COLOR_BUTTON_LIGHT, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=cmd_clear_ram).pack(side="right", padx=4, pady=5)
-tk.Button(toolbar, text="📊 Wave", bg=COLOR_BUTTON_LIGHT, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=cmd_open_gtkwave).pack(side="right", padx=4, pady=5)
+tk.Button(toolbar, text="🔄 Refresh", bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=cmd_refresh).pack(side="right", padx=4, pady=5)
+tk.Button(toolbar, text="🗑  Clear RAM", bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=cmd_clear_ram).pack(side="right", padx=4, pady=5)
+tk.Button(toolbar, text="📊 Wave", bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=6, command=cmd_open_gtkwave).pack(side="right", padx=4, pady=5)
 
 # ============================================================
-# MAIN CONTENT - LEFT RESIZABLE, RIGHT FIXED
+# MAIN CONTENT - RESIZABLE PANELS
 # ============================================================
-# Create a main frame to hold both left and right
-main_frame = tk.Frame(root, bg=COLOR_BG_PRIMARY)
-main_frame.pack(fill="both", expand=True, padx=0, pady=0)
+main_paned = tk.PanedWindow(root, orient=tk.HORIZONTAL, bg=COLOR_BG_PRIMARY, sashwidth=4, relief="flat")
+main_paned.pack(fill="both", expand=True, padx=0, pady=0)
 
-# LEFT PANED (Editor & Console) - RESIZABLE
-left_paned = tk.PanedWindow(main_frame, orient=tk.VERTICAL, bg=COLOR_BG_PRIMARY, sashwidth=3, relief="flat")
-left_paned.pack(side="left", fill="both", expand=True, padx=0, pady=0)
+# LEFT PANED (Editor & Console)
+left_paned = tk.PanedWindow(main_paned, orient=tk.VERTICAL, bg=COLOR_BG_PRIMARY, sashwidth=3, relief="flat")
+main_paned.add(left_paned, width=900)
 
 # EDITOR PANEL
 editor_frame = tk.Frame(left_paned, bg=COLOR_BG_PRIMARY, relief="solid", bd=1)
@@ -632,21 +630,20 @@ console.pack(side="left", fill="both", expand=True)
 console_scroll.config(command=console.yview)
 console.config(state="disabled")
 
-# RIGHT PANEL - RAM & CONTROL (FIXED SIZE)
-right_outer = tk.Frame(main_frame, bg=COLOR_BG_PRIMARY, relief="solid", bd=1, width=420)
-right_outer.pack(side="right", fill="y", padx=0, pady=0)
-right_outer.pack_propagate(False)
+# RIGHT PANEL - RAM & CONTROL (SCROLLABLE)
+right_outer = tk.Frame(main_paned, bg=COLOR_BG_PRIMARY, relief="solid", bd=1)
+main_paned.add(right_outer, width=380)
 
-# Create scrollable content for right panel
-right_canvas = tk.Canvas(right_outer, bg=COLOR_BG_PRIMARY, highlightthickness=0, bd=0)
-right_scrollbar = tk.Scrollbar(right_outer, orient="vertical", command=right_canvas.yview)
+# Add scrollbar to right panel
+right_canvas = tk.Canvas(right_outer, bg=COLOR_BG_PRIMARY, highlightthickness=0)
+scrollbar = tk.Scrollbar(right_outer, orient="vertical", command=right_canvas.yview)
 right_frame = tk.Frame(right_canvas, bg=COLOR_BG_PRIMARY)
 
-right_canvas.create_window((0, 0), window=right_frame, anchor="nw", width=410)
-right_canvas.configure(yscrollcommand=right_scrollbar.set, bg=COLOR_BG_PRIMARY)
+right_canvas.create_window((0, 0), window=right_frame, anchor="nw")
+right_canvas.configure(yscrollcommand=scrollbar.set)
 
 right_canvas.pack(side="left", fill="both", expand=True)
-right_scrollbar.pack(side="right", fill="y")
+scrollbar.pack(side="right", fill="y")
 
 def _on_mousewheel(event):
     right_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
@@ -654,41 +651,41 @@ right_canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
 # RAM HEADER
 ram_header = tk.Frame(right_frame, bg=COLOR_SECTION_HEADER, relief="flat", bd=0)
-ram_header.pack(fill="both", padx=0, pady=0)
+ram_header.pack(fill="x", padx=0, pady=0)
 tk.Label(ram_header, text="MEMORY (RAM)", bg=COLOR_SECTION_HEADER, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 9, "bold")).pack(fill="x", padx=8, pady=6)
 
 # RAM TABLE
 ram_table_frame = tk.Frame(right_frame, bg=COLOR_BG_PRIMARY)
-ram_table_frame.pack(fill="both", padx=110, pady=(4, 0))
+ram_table_frame.pack(fill="x", padx=8, pady=(8, 12))
 
 ram_cells = []
 for i in range(16):
     row = tk.Frame(ram_table_frame, bg=COLOR_BG_PRIMARY)
-    row.pack(fill="x", pady=3)
+    row.pack(fill="x", pady=4)
     
-    addr = tk.Label(row, text=f"{i:02X}", width=3, bg=COLOR_ACCENT_BORDER, fg="white", font=("Consolas", 12, "bold"), relief="solid", bd=1, padx=6, pady=4)
-    addr.pack(side="left", padx=3)
+    addr = tk.Label(row, text=f"{i:02X}", width=3, bg=COLOR_ACCENT_BORDER, fg="white", font=("Consolas", 12, "bold"), relief="solid", bd=1, padx=6, pady=5)
+    addr.pack(side="left", padx=4)
     
-    val = tk.Label(row, text="0", width=6, bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Consolas", 12), relief="solid", bd=1, padx=6, pady=4)
-    val.pack(side="left", padx=3, fill="x", expand=True)
+    val = tk.Label(row, text="0", width=6, bg=COLOR_BG_SECONDARY, fg=COLOR_TEXT_PRIMARY, font=("Consolas", 12), relief="solid", bd=1, padx=6, pady=5)
+    val.pack(side="left", padx=4, fill="x", expand=True)
     
     ram_cells.append(val)
 
 # WRITE TO RAM SECTION
 write_header = tk.Frame(right_frame, bg=COLOR_SECTION_HEADER, relief="flat", bd=0)
-write_header.pack(fill="both", padx=0, pady=(8, 0))
-tk.Label(write_header, text="WRITE TO RAM", bg=COLOR_SECTION_HEADER, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 9, "bold")).pack(fill="x", padx=110, pady=6)
+write_header.pack(fill="x", padx=0, pady=(12, 0))
+tk.Label(write_header, text="WRITE TO RAM", bg=COLOR_SECTION_HEADER, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 9, "bold")).pack(fill="x", padx=8, pady=6)
 
 write_frame = tk.Frame(right_frame, bg=COLOR_BG_PRIMARY)
-write_frame.pack(fill="both", padx=110, pady=(0, 12))
+write_frame.pack(fill="x", padx=8, pady=12)
 
-tk.Label(write_frame, text="Address (0–F):", bg=COLOR_BG_PRIMARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 3))
+tk.Label(write_frame, text="Address (0–F):", bg=COLOR_BG_PRIMARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 4))
 addr_entry = tk.Entry(write_frame, width=12, font=("Consolas", 11), bg=COLOR_BG_PRIMARY, fg=COLOR_TEXT_PRIMARY, relief="solid", bd=1, insertbackground=COLOR_ACCENT_BORDER)
-addr_entry.pack(fill="x", pady=(0, 8))
+addr_entry.pack(fill="x", pady=(0, 10))
 
-tk.Label(write_frame, text="Value (0–F):", bg=COLOR_BG_PRIMARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 3))
+tk.Label(write_frame, text="Value (0–F):", bg=COLOR_BG_PRIMARY, fg=COLOR_TEXT_PRIMARY, font=("Segoe UI", 9)).pack(anchor="w", pady=(0, 4))
 data_entry = tk.Entry(write_frame, width=12, font=("Consolas", 11), bg=COLOR_BG_PRIMARY, fg=COLOR_TEXT_PRIMARY, relief="solid", bd=1, insertbackground=COLOR_ACCENT_BORDER)
-data_entry.pack(fill="x", pady=(0, 8))
+data_entry.pack(fill="x", pady=(0, 12))
 
 addr_entry.bind("<KeyRelease>", lambda e: validate_hex_entry(addr_entry))
 data_entry.bind("<KeyRelease>", lambda e: validate_hex_entry(data_entry))
